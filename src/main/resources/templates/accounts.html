@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DemoBank - My Accounts</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">🏦 DemoBank</div>
+            <nav class="nav">
+                <a th:href="@{/dashboard}">Dashboard</a>
+                <a th:href="@{/accounts}" style="color: #2a5298; font-weight: bold;">Accounts</a>
+                <a th:href="@{/transfer}">Transfer</a>
+                <a th:href="@{/credit-application}">Credit Card</a>
+                <a th:href="@{/search}">Search</a>
+                <span th:text="'Welcome, ' + ${user.firstName}"></span>
+                <a th:href="@{/logout}">Logout</a>
+            </nav>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Success/Error Messages -->
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+        
+        <div class="card">
+            <h1>My Accounts</h1>
+            <p style="color: #666; margin-bottom: 2rem;">View all your banking accounts and balances</p>
+        </div>
+
+        <!-- Accounts Grid -->
+        <div class="account-grid">
+            <div th:each="account : ${accounts}" class="account-card" 
+                 th:classappend="${account.accountType == 'CHECKING'} ? 'checking' : (${account.accountType == 'SAVINGS'} ? 'savings' : 'investment')">
+                <div class="account-type" th:text="${account.accountType} + ' ACCOUNT'"></div>
+                <div class="account-balance" th:text="'$' + ${#numbers.formatDecimal(account.balance, 0, 'COMMA', 2, 'POINT')}"></div>
+                <div class="account-number" th:text="'Account: ' + ${account.accountNumber}"></div>
+                
+                <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                    <button class="btn" style="background: rgba(255,255,255,0.2); color: white; font-size: 0.9rem; padding: 0.5rem 1rem;">
+                        View Details
+                    </button>
+                    <button class="btn" style="background: rgba(255,255,255,0.2); color: white; font-size: 0.9rem; padding: 0.5rem 1rem;">
+                        Download Statement
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Details Table -->
+        <div class="card">
+            <h2 style="margin-bottom: 1.5rem;">Account Details</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Account Type</th>
+                        <th>Account Number</th>
+                        <th>Balance</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="account : ${accounts}">
+                        <td th:text="${account.accountType}"></td>
+                        <td th:text="${account.accountNumber}"></td>
+                        <td th:text="'$' + ${#numbers.formatDecimal(account.balance, 0, 'COMMA', 2, 'POINT')}"></td>
+                        <td>
+                            <span style="background: #28a745; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem;">
+                                Active
+                            </span>
+                        </td>
+                        <td>
+                            <a th:href="@{/transfer}" class="btn btn-primary" style="font-size: 0.8rem; padding: 0.5rem 1rem;">
+                                Transfer
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Total Balance Summary -->
+        <div class="card">
+            <h2 style="margin-bottom: 1.5rem;">Total Assets</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem;">
+                <div>
+                    <h3 style="color: #2a5298; margin-bottom: 0.5rem;">Total Balance</h3>
+                    <p style="font-size: 2rem; font-weight: bold; color: #28a745;" 
+                       th:text="'$' + ${#numbers.formatDecimal(#aggregates.sum(accounts.![balance]), 0, 'COMMA', 2, 'POINT')}"></p>
+                </div>
+                <div>
+                    <h3 style="color: #2a5298; margin-bottom: 0.5rem;">Liquid Assets</h3>
+                    <p style="font-size: 2rem; font-weight: bold; color: #17a2b8;" 
+                       th:text="'$' + ${#numbers.formatDecimal(#aggregates.sum(accounts.?[accountType == 'CHECKING' or accountType == 'SAVINGS'].![balance]), 0, 'COMMA', 2, 'POINT')}"></p>
+                </div>
+                <div>
+                    <h3 style="color: #2a5298; margin-bottom: 0.5rem;">Investments</h3>
+                    <p style="font-size: 2rem; font-weight: bold; color: #fd7e14;" 
+                       th:text="'$' + ${#numbers.formatDecimal(#aggregates.sum(accounts.?[accountType == 'INVESTMENT'].![balance]), 0, 'COMMA', 2, 'POINT')}"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+            <h2 style="margin-bottom: 1.5rem;">Quick Actions</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <a th:href="@{/transfer}" class="btn btn-primary">Transfer Money</a>
+                <a th:href="@{/credit-application}" class="btn btn-success">Apply for Credit Card</a>
+                <button class="btn btn-secondary">Download All Statements</button>
+                <button class="btn" style="background: #6f42c1; color: white;">Investment Options</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .account-card.checking {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .account-card.savings {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .account-card.investment {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+    </style>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DemoBank - Login</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="container">
+        <div class="welcome">
+            <h1>🏦 DemoBank</h1>
+            <p>Your Trusted Banking Partner</p>
+        </div>
+        
+        <div class="card login-card">
+            <h2 style="text-align: center; margin-bottom: 2rem; color: #2a5298;">Login to Your Account</h2>
+            
+            <!-- Display error message if login failed -->
+            <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+            
+            <form th:action="@{/login}" method="post">
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" 
+                           id="username" 
+                           name="username" 
+                           class="form-control" 
+                           placeholder="Enter your username"
+                           required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" 
+                           id="password" 
+                           name="password" 
+                           class="form-control" 
+                           placeholder="Enter your password"
+                           required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-full">Login</button>
+            </form>
+            
+            <div style="margin-top: 2rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                <h4 style="margin-bottom: 1rem; color: #2a5298;">Demo Accounts:</h4>
+                <p><strong>Customer 1:</strong> username: <code>alice</code>, password: <code>password123</code></p>
+                <p><strong>Customer 2:</strong> username: <code>bob</code>, password: <code>pass456</code></p>
+                <p><strong>Admin:</strong> username: <code>admin</code>, password: <code>admin</code></p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>🏦 Welcome to DemoBank - Your trusted banking solution.</p>
+            <p>For demo purposes only.</p>
+        </div>
+    </div>
+</body>
+</html>

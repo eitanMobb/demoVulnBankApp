@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DemoBank - Search Applications</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">🏦 DemoBank</div>
+            <nav class="nav">
+                <a th:href="@{/dashboard}">Dashboard</a>
+                <a th:href="@{/accounts}">Accounts</a>
+                <a th:href="@{/transfer}">Transfer</a>
+                <a th:href="@{/credit-application}">Credit Card</a>
+                <a th:href="@{/search}" style="color: #2a5298; font-weight: bold;">Search</a>
+                <span th:text="'Welcome, ' + ${user.firstName}"></span>
+                <a th:href="@{/logout}">Logout</a>
+            </nav>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h1 style="margin-bottom: 1rem;">🔍 Search Credit Applications</h1>
+            <p style="color: #666; margin-bottom: 2rem;">Search through credit card applications by employment status or comments</p>
+            
+            <form th:action="@{/search}" method="post" style="margin-bottom: 2rem;">
+                <div style="display: flex; gap: 1rem; align-items: end;">
+                    <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                        <label for="searchTerm">Search Term:</label>
+                        <input type="text" 
+                               id="searchTerm" 
+                               name="searchTerm" 
+                               class="form-control" 
+                               placeholder="Enter employment status or keyword..."
+                               th:value="${searchTerm}">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </div>
+            </form>
+            
+            <div style="background: #e9ecef; padding: 1rem; border-radius: 8px;">
+                <h4 style="margin-bottom: 0.5rem; color: #495057;">Search Examples:</h4>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <button type="button" class="btn" style="background: #6c757d; color: white; font-size: 0.8rem; padding: 0.4rem 0.8rem;" 
+                            onclick="document.getElementById('searchTerm').value='Full-time'">Full-time</button>
+                    <button type="button" class="btn" style="background: #6c757d; color: white; font-size: 0.8rem; padding: 0.4rem 0.8rem;" 
+                            onclick="document.getElementById('searchTerm').value='Student'">Student</button>
+                    <button type="button" class="btn" style="background: #6c757d; color: white; font-size: 0.8rem; padding: 0.4rem 0.8rem;" 
+                            onclick="document.getElementById('searchTerm').value='good credit'">Good Credit</button>
+                    <button type="button" class="btn" style="background: #6c757d; color: white; font-size: 0.8rem; padding: 0.4rem 0.8rem;" 
+                            onclick="document.getElementById('searchTerm').value='graduate'">Graduate</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Results -->
+        <div th:if="${results}" class="card">
+            <h2 style="margin-bottom: 1.5rem;">Search Results</h2>
+            <p style="color: #666; margin-bottom: 1rem;" th:text="'Found ' + ${#lists.size(results)} + ' application(s) matching: ' + ${searchTerm}"></p>
+            
+            <div th:if="${#lists.isEmpty(results)}" style="text-align: center; padding: 2rem; color: #666;">
+                <h3>No applications found</h3>
+                <p>Try a different search term or check your spelling.</p>
+            </div>
+            
+            <div th:if="${!#lists.isEmpty(results)}">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Application ID</th>
+                            <th>User ID</th>
+                            <th>Requested Limit</th>
+                            <th>Annual Income</th>
+                            <th>Employment Status</th>
+                            <th>Status</th>
+                            <th>Comments</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="app : ${results}">
+                            <td th:text="${app.id}"></td>
+                            <td th:text="${app.userId}"></td>
+                            <td th:text="'$' + ${#numbers.formatDecimal(app.requestedLimit, 0, 'COMMA', 2, 'POINT')}"></td>
+                            <td th:text="'$' + ${#numbers.formatDecimal(app.annualIncome, 0, 'COMMA', 2, 'POINT')}"></td>
+                            <td th:text="${app.employmentStatus}"></td>
+                            <td>
+                                <span th:class="${app.status == 'APPROVED'} ? 'badge-success' : (${app.status == 'DENIED'} ? 'badge-danger' : 'badge-warning')"
+                                      th:text="${app.status}"></span>
+                            </td>
+                            <td th:text="${app.comments ?: 'No comments'}"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Search Tips -->
+        <div class="card">
+            <h2 style="margin-bottom: 1.5rem;">💡 Search Tips</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                <div>
+                    <h4 style="color: #2a5298; margin-bottom: 0.5rem;">Employment Status</h4>
+                    <ul>
+                        <li>Full-time</li>
+                        <li>Part-time</li>
+                        <li>Self-employed</li>
+                        <li>Student</li>
+                        <li>Retired</li>
+                        <li>Unemployed</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="color: #2a5298; margin-bottom: 0.5rem;">Common Keywords</h4>
+                    <ul>
+                        <li>good credit</li>
+                        <li>bad credit</li>
+                        <li>graduate</li>
+                        <li>experienced</li>
+                        <li>new customer</li>
+                        <li>existing</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="color: #2a5298; margin-bottom: 0.5rem;">Search Tips</h4>
+                    <ul>
+                        <li>Use partial matches</li>
+                        <li>Search is case-insensitive</li>
+                        <li>Searches both employment and comments</li>
+                        <li>Try single words for better results</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .badge-success {
+            background: #28a745;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .badge-danger {
+            background: #dc3545;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .badge-warning {
+            background: #ffc107;
+            color: #212529;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+    </style>
+</body>
+</html>

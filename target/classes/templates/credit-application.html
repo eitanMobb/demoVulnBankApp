@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DemoBank - Credit Card Application</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">🏦 DemoBank</div>
+            <nav class="nav">
+                <a th:href="@{/dashboard}">Dashboard</a>
+                <a th:href="@{/accounts}">Accounts</a>
+                <a th:href="@{/transfer}">Transfer</a>
+                <a th:href="@{/credit-application}" style="color: #2a5298; font-weight: bold;">Credit Card</a>
+                <a th:href="@{/search}">Search</a>
+                <span th:text="'Welcome, ' + ${user.firstName}"></span>
+                <a th:href="@{/logout}">Logout</a>
+            </nav>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Success/Error Messages -->
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+        
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+            <!-- Application Form -->
+            <div class="card">
+                <h1 style="margin-bottom: 1rem;">💳 Credit Card Application</h1>
+                <p style="color: #666; margin-bottom: 2rem;">Apply for a DemoBank Credit Card with competitive rates and rewards!</p>
+                
+                <form th:action="@{/credit-application}" method="post">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label for="requestedLimit">Requested Credit Limit ($):</label>
+                            <select id="requestedLimit" name="requestedLimit" class="form-control" required>
+                                <option value="">Select credit limit</option>
+                                <option value="1000">$1,000</option>
+                                <option value="2500">$2,500</option>
+                                <option value="5000">$5,000</option>
+                                <option value="10000">$10,000</option>
+                                <option value="15000">$15,000</option>
+                                <option value="25000">$25,000</option>
+                                <option value="50000">$50,000</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="annualIncome">Annual Income ($):</label>
+                            <input type="number" 
+                                   id="annualIncome" 
+                                   name="annualIncome" 
+                                   class="form-control" 
+                                   placeholder="75000"
+                                   min="0"
+                                   required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="employmentStatus">Employment Status:</label>
+                        <select id="employmentStatus" name="employmentStatus" class="form-control" required>
+                            <option value="">Select employment status</option>
+                            <option value="Full-time">Full-time Employee</option>
+                            <option value="Part-time">Part-time Employee</option>
+                            <option value="Self-employed">Self-employed</option>
+                            <option value="Unemployed">Unemployed</option>
+                            <option value="Student">Student</option>
+                            <option value="Retired">Retired</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="comments">Additional Comments:</label>
+                        <textarea id="comments" 
+                                  name="comments" 
+                                  class="form-control" 
+                                  rows="4"
+                                  placeholder="Tell us about your financial goals, credit history, or any other relevant information..."></textarea>
+                    </div>
+                    
+                    <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin: 1.5rem 0;">
+                        <h4 style="margin-bottom: 0.5rem; color: #2a5298;">Application Terms</h4>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: normal;">
+                            <input type="checkbox" required>
+                            I agree to the terms and conditions and authorize DemoBank to check my credit report
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: normal; margin-top: 0.5rem;">
+                            <input type="checkbox">
+                            I would like to receive promotional offers and updates via email
+                        </label>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success btn-full">Submit Application</button>
+                </form>
+            </div>
+
+            <!-- Credit Card Options -->
+            <div>
+                <div class="card" style="margin-bottom: 1.5rem;">
+                    <h3 style="margin-bottom: 1rem; color: #2a5298;">💎 DemoBank Premium</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin: 0.5rem 0;">✓ 2% cash back on all purchases</li>
+                        <li style="margin: 0.5rem 0;">✓ No annual fee</li>
+                        <li style="margin: 0.5rem 0;">✓ 0% APR for 12 months</li>
+                        <li style="margin: 0.5rem 0;">✓ Free fraud protection</li>
+                    </ul>
+                </div>
+                
+                <div class="card" style="margin-bottom: 1.5rem;">
+                    <h3 style="margin-bottom: 1rem; color: #28a745;">🌟 DemoBank Rewards</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin: 0.5rem 0;">✓ 5% back on rotating categories</li>
+                        <li style="margin: 0.5rem 0;">✓ 1% back on everything else</li>
+                        <li style="margin: 0.5rem 0;">✓ $200 sign-up bonus</li>
+                        <li style="margin: 0.5rem 0;">✓ Travel insurance included</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <h3 style="margin-bottom: 1rem; color: #17a2b8;">🚀 DemoBank Student</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin: 0.5rem 0;">✓ No credit history required</li>
+                        <li style="margin: 0.5rem 0;">✓ 1% cash back</li>
+                        <li style="margin: 0.5rem 0;">✓ Credit education resources</li>
+                        <li style="margin: 0.5rem 0;">✓ Graduation bonus</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Application Requirements -->
+        <div class="card">
+            <h2 style="margin-bottom: 1.5rem;">📋 Application Requirements</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                <div>
+                    <h4 style="color: #2a5298; margin-bottom: 0.5rem;">Basic Requirements</h4>
+                    <ul>
+                        <li>Must be 18+ years old</li>
+                        <li>Valid Social Security Number</li>
+                        <li>Verifiable income source</li>
+                        <li>U.S. resident or citizen</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="color: #2a5298; margin-bottom: 0.5rem;">Documentation Needed</h4>
+                    <ul>
+                        <li>Government-issued ID</li>
+                        <li>Proof of income (pay stubs)</li>
+                        <li>Bank statements (2 months)</li>
+                        <li>Employment verification</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="color: #2a5298; margin-bottom: 0.5rem;">Credit Factors</h4>
+                    <ul>
+                        <li>Credit score (FICO)</li>
+                        <li>Debt-to-income ratio</li>
+                        <li>Payment history</li>
+                        <li>Length of credit history</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-suggest credit limit based on income
+        document.getElementById('annualIncome').addEventListener('input', function() {
+            const income = parseFloat(this.value);
+            const limitSelect = document.getElementById('requestedLimit');
+            
+            if (income >= 100000) {
+                limitSelect.value = '25000';
+            } else if (income >= 75000) {
+                limitSelect.value = '15000';
+            } else if (income >= 50000) {
+                limitSelect.value = '10000';
+            } else if (income >= 30000) {
+                limitSelect.value = '5000';
+            } else if (income >= 20000) {
+                limitSelect.value = '2500';
+            } else if (income > 0) {
+                limitSelect.value = '1000';
+            }
+        });
+    </script>
+</body>
+</html>
