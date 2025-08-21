@@ -160,10 +160,19 @@ public class BankService {
                         userId + ", " + requestedLimit + ", " + annualIncome + ", '" +
                         employmentStatus + "', 'PENDING', CURRENT_TIMESTAMP, '" + comments + "')";
             
-            System.out.println("Executing SQL: " + sql);
+            System.out.println("Executing SQL: ?");
             
-            Statement stmt = conn.createStatement();
-            int result = stmt.executeUpdate(sql);
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            try {
+                stmt.setInt(1, Math.round(Float.parseFloat(sql)));
+            } catch (NumberFormatException e) {
+                // MOBB: consider printing this message to logger: mobb-b3891ea9a75d203a33b7786aebff35ea: Failed to convert input to type integer
+
+                // MOBB: using a default value for the SQL parameter in case the input is not convertible.
+                // This is important for preventing users from causing a denial of service to this application by throwing an exception here.
+                stmt.setInt(1, 0);
+            }
+            int result = stmt.executeUpdate();
             return result > 0;
         } catch (SQLException e) {
             e.printStackTrace();
