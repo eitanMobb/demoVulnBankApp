@@ -71,6 +71,17 @@ public class DataInitService implements CommandLineRunner {
                         "(1, 5000.00, 75000.00, 'Full-time', 'APPROVED', CURRENT_TIMESTAMP, 'Good credit history'), " +
                         "(2, 3000.00, 45000.00, 'Part-time', 'PENDING', CURRENT_TIMESTAMP, 'Recent graduate')");
             
+            // Create transactions table
+            stmt.execute("CREATE TABLE IF NOT EXISTS transactions (" +
+                        "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
+                        "account_id BIGINT NOT NULL, " +
+                        "transaction_type VARCHAR(20) NOT NULL, " +
+                        "amount DECIMAL(15,2) NOT NULL, " +
+                        "transaction_date TIMESTAMP NOT NULL, " +
+                        "description VARCHAR(500), " +
+                        "related_account_id BIGINT, " +
+                        "status VARCHAR(20) NOT NULL)");
+            
             System.out.println("Database initialized with sample data");
             
         } catch (Exception e) {

@@ -3,6 +3,7 @@ package com.demobank.controller;
 import com.demobank.entity.User;
 import com.demobank.entity.Account;
 import com.demobank.entity.CreditApplication;
+import com.demobank.entity.Transaction;
 import com.demobank.service.BankService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -11,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 public class BankController {
@@ -190,5 +193,78 @@ public class BankController {
     public String logout(HttpSession session) {
         session.invalidate();
         return "redirect:/login";
+    }
+    
+    /**
+     * Transaction history page
+     */
+    @GetMapping("/transactions")
+    public String transactionsPage(HttpSession session, Model model) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+        
+        List<Transaction> transactions = bankService.getUserTransactions(user.getId().toString());
+        List<Account> accounts = bankService.getUserAccounts(user.getId().toString());
+        
+        // Create a map of account IDs to account info for easy lookup
+        Map<Long, Account> accountMap = new HashMap<>();
+        for (Account account : accounts) {
+            accountMap.put(account.getId(), account);
+        }
+        
+        model.addAttribute("user", user);
+        model.addAttribute("transactions", transactions);
+        model.addAttribute("accounts", accounts);
+        model.addAttribute("accountMap", accountMap);
+        return "transactions";
+    }
+    
+    /**
+     * Search transactions endpoint
+     */
+    @PostMapping("/transactions/search")
+    public String searchTransactions(@RequestParam(required = false) String transactionType,
+                                    @RequestParam(required = false) String minAmount,
+                                    @RequestParam(required = false) String maxAmount,
+                                    @RequestParam(required = false) String startDate,
+                                    @RequestParam(required = false) String endDate,
+                                    @RequestParam(required = false) String description,
+                                    HttpSession session,
+                                    Model model) {
+        
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+        
+        List<Transaction> transactions = bankService.searchTransactions(
+            user.getId().toString(), transactionType, minAmount, maxAmount, 
+            startDate, endDate, description
+        );
+        
+        List<Account> accounts = bankService.getUserAccounts(user.getId().toString());
+        
+        // Create a map of account IDs to account info for easy lookup
+        Map<Long, Account> accountMap = new HashMap<>();
+        for (Account account : accounts) {
+            accountMap.put(account.getId(), account);
+        }
+        
+        model.addAttribute("user", user);
+        model.addAttribute("transactions", transactions);
+        model.addAttribute("accounts", accounts);
+        model.addAttribute("accountMap", accountMap);
+        model.addAttribute("filters", Map.of(
+            "transactionType", transactionType != null ? transactionType : "",
+            "minAmount", minAmount != null ? minAmount : "",
+            "maxAmount", maxAmount != null ? maxAmount : "",
+            "startDate", startDate != null ? startDate : "",
+            "endDate", endDate != null ? endDate : "",
+            "description", description != null ? description : ""
+        ));
+        
+        return "transactions";
     }
 }
