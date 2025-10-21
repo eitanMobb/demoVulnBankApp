@@ -29,22 +29,6 @@ When updating an existing rule file:
 
 ## Active Security Rules
 
-### SQL Injection Prevention
-- **Rule File**: `sql-injection.mdc`
-- **Created**: 2025-10-21
-- **Status**: Active
-- **Description**: Comprehensive rules for preventing SQL injection vulnerabilities by enforcing the use of parameterized queries and prepared statements
-- **Key Requirements**:
-  - ALWAYS use PreparedStatement for all database operations
-  - NEVER concatenate user input directly into SQL queries
-  - Use type-specific parameter setters (setString, setInt, etc.)
-  - Properly handle dynamic query building with parameterized values
-- **Vulnerabilities Addressed**:
-  - SQL Injection in authentication queries
-  - SQL Injection in data retrieval methods
-  - SQL Injection in insert/update/delete operations
-  - SQL Injection in dynamic search filters
-
 ## Enforcement
 - This rule is ALWAYS APPLIED and cannot be bypassed
 - Any AI assistant that fails to follow this protocol should be corrected immediately
