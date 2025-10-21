@@ -1,0 +1,204 @@
+---
+version: 1.0.0
+created: 2025-10-21
+alwaysApply: true
+status: 
+  - active: true
+    date: 2025-10-21
+    reason: "Initial creation after fixing SQL injection vulnerabilities in transaction history feature"
+---
+
+# SQL Injection Prevention Rules
+
+## Overview
+SQL Injection is a critical security vulnerability that occurs when user input is directly concatenated into SQL queries without proper sanitization or parameterization. This can allow attackers to execute arbitrary SQL commands, potentially leading to data breaches, data manipulation, or complete database compromise.
+
+## Mandatory Security Requirements
+
+### ✅ ALWAYS Use PreparedStatement
+**CRITICAL**: Never use `Statement` with string concatenation. Always use `PreparedStatement` with parameterized queries.
+
+**❌ NEVER DO THIS:**
+```java
+// BAD - Vulnerable to SQL injection
+String sql = "SELECT * FROM users WHERE username = '" + username + "'";
+Statement stmt = conn.createStatement();
+ResultSet rs = stmt.executeQuery(sql);
+
+// BAD - String concatenation with user input
+String sql = "UPDATE accounts SET balance = balance - " + amount + " WHERE id = " + accountId;
+stmt.executeUpdate(sql);
+
+// BAD - StringBuilder with user input
+StringBuilder sql = new StringBuilder("SELECT * FROM transactions WHERE ");
+sql.append("user_id = ").append(userId);
+sql.append(" AND description LIKE '%").append(searchTerm).append("%'");
+```
+
+**✅ ALWAYS DO THIS:**
+```java
+// GOOD - Using PreparedStatement with parameterized queries
+String sql = "SELECT * FROM users WHERE username = ?";
+PreparedStatement stmt = conn.prepareStatement(sql);
+stmt.setString(1, username);
+ResultSet rs = stmt.executeQuery();
+
+// GOOD - Multiple parameters
+String sql = "UPDATE accounts SET balance = balance - ? WHERE id = ?";
+PreparedStatement stmt = conn.prepareStatement(sql);
+stmt.setBigDecimal(1, amount);
+stmt.setLong(2, accountId);
+stmt.executeUpdate();
+
+// GOOD - Dynamic queries with PreparedStatement
+StringBuilder sql = new StringBuilder("SELECT * FROM transactions WHERE user_id = ?");
+List<Object> parameters = new ArrayList<>();
+parameters.add(userId);
+
+if (searchTerm != null && !searchTerm.isEmpty()) {
+    sql.append(" AND description LIKE ?");
+    parameters.add("%" + searchTerm + "%");
+}
+
+PreparedStatement stmt = conn.prepareStatement(sql.toString());
+for (int i = 0; i < parameters.size(); i++) {
+    stmt.setObject(i + 1, parameters.get(i));
+}
+```
+
+### 🔒 Input Validation Guidelines
+
+1. **Always validate user input** before using it in queries, even with PreparedStatement
+2. **Whitelist acceptable values** when possible (e.g., enum values, predefined options)
+3. **Validate data types** - ensure numeric inputs are actually numbers
+4. **Limit input length** to prevent buffer overflow attacks
+5. **Sanitize special characters** in display contexts (but rely on PreparedStatement for SQL)
+
+### 🛡️ Parameter Setting Best Practices
+
+1. **Use typed setters when possible:**
+   - `setString()` for text
+   - `setInt()`, `setLong()`, `setBigDecimal()` for numbers
+   - `setDate()`, `setTimestamp()` for dates
+   - `setNull()` for NULL values
+
+2. **Handle NULL values properly:**
+```java
+if (relatedAccountId != null) {
+    stmt.setLong(5, relatedAccountId);
+} else {
+    stmt.setNull(5, java.sql.Types.BIGINT);
+}
+```
+
+3. **Never bypass PreparedStatement for "convenience"** - the performance difference is negligible compared to the security risk
+
+### 🚨 Common Vulnerability Patterns to Avoid
+
+1. **String concatenation in WHERE clauses:**
+```java
+// BAD
+"WHERE user_id = " + userId
+// GOOD
+"WHERE user_id = ?"
+```
+
+2. **LIKE queries with user input:**
+```java
+// BAD
+"WHERE description LIKE '%" + searchTerm + "%'"
+// GOOD - PreparedStatement handles escaping
+"WHERE description LIKE ?"
+// Then: stmt.setString(1, "%" + searchTerm + "%");
+```
+
+3. **Dynamic column or table names:**
+```java
+// If you MUST use dynamic table/column names (very rare):
+// - Use a whitelist of allowed values
+// - Never take these directly from user input
+String[] allowedTables = {"transactions", "accounts"};
+if (!Arrays.asList(allowedTables).contains(tableName)) {
+    throw new IllegalArgumentException("Invalid table name");
+}
+```
+
+4. **IN clauses with dynamic values:**
+```java
+// BAD
+"WHERE id IN (" + idList + ")"
+
+// GOOD
+String placeholders = ids.stream()
+    .map(id -> "?")
+    .collect(Collectors.joining(","));
+String sql = "WHERE id IN (" + placeholders + ")";
+PreparedStatement stmt = conn.prepareStatement(sql);
+for (int i = 0; i < ids.size(); i++) {
+    stmt.setLong(i + 1, ids.get(i));
+}
+```
+
+### 📋 Code Review Checklist
+
+Before committing SQL-related code, verify:
+
+- [ ] All SQL queries use `PreparedStatement`, not `Statement`
+- [ ] No string concatenation or `StringBuilder.append()` with user input in SQL
+- [ ] All user inputs are passed as parameters using `stmt.setXxx()` methods
+- [ ] NULL values are handled with `stmt.setNull()` when needed
+- [ ] Dynamic queries build the SQL structure safely, then parameterize values
+- [ ] Input validation is performed before database operations
+- [ ] No SQL keywords or operators are constructed from user input
+
+### 🔍 Testing for SQL Injection
+
+Always test with malicious inputs:
+- `' OR '1'='1`
+- `'; DROP TABLE users; --`
+- `" OR 1=1 --`
+- `\' OR \'1\'=\'1`
+
+If PreparedStatement is used correctly, these should be treated as literal strings, not SQL commands.
+
+### 🏗️ Framework-Specific Notes
+
+#### Spring JDBC Template
+If using Spring's JdbcTemplate, use parameterized queries:
+```java
+// GOOD
+jdbcTemplate.query(
+    "SELECT * FROM users WHERE username = ?",
+    new Object[]{username},
+    rowMapper
+);
+```
+
+#### JPA/Hibernate
+Use named parameters or positional parameters:
+```java
+// GOOD - Named parameters
+Query query = em.createQuery("SELECT u FROM User u WHERE u.username = :username");
+query.setParameter("username", username);
+
+// GOOD - Positional parameters
+Query query = em.createQuery("SELECT u FROM User u WHERE u.username = ?1");
+query.setParameter(1, username);
+```
+
+## Enforcement
+- All database queries MUST follow these guidelines
+- Code reviews MUST verify SQL injection prevention
+- Security scans MUST be run before merging to main branch
+- Any violations should be treated as critical security issues
+
+## Related Vulnerabilities
+- Command Injection
+- LDAP Injection
+- XPath Injection
+- NoSQL Injection
+
+## References
+- OWASP SQL Injection: https://owasp.org/www-community/attacks/SQL_Injection
+- CWE-89: https://cwe.mitre.org/data/definitions/89.html
+- Java PreparedStatement Documentation

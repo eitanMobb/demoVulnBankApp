@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DemoBank - Transaction History</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">🏦 DemoBank</div>
+            <nav class="nav">
+                <a th:href="@{/dashboard}">Dashboard</a>
+                <a th:href="@{/accounts}">Accounts</a>
+                <a th:href="@{/transfer}">Transfer</a>
+                <a th:href="@{/transactions}" class="active">Transactions</a>
+                <a th:href="@{/credit-application}">Credit Card</a>
+                <a th:href="@{/search}">Search</a>
+                <span th:text="'Welcome, ' + ${user.firstName}"></span>
+                <a th:href="@{/logout}">Logout</a>
+            </nav>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <h1>Transaction History</h1>
+            <p style="color: #666; margin-bottom: 2rem;">View and search your transaction history</p>
+        </div>
+
+        <!-- Search/Filter Form -->
+        <div class="card">
+            <h2 style="margin-bottom: 1.5rem;">Filter Transactions</h2>
+            <form th:action="@{/transactions/search}" method="post">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+                    <div class="form-group">
+                        <label for="transactionType">Transaction Type</label>
+                        <select id="transactionType" name="transactionType" class="form-control" th:value="${transactionType}">
+                            <option value="ALL" th:selected="${transactionType == null or transactionType == 'ALL'}">All Types</option>
+                            <option value="TRANSFER" th:selected="${transactionType == 'TRANSFER'}">Transfer</option>
+                            <option value="DEPOSIT" th:selected="${transactionType == 'DEPOSIT'}">Deposit</option>
+                            <option value="WITHDRAWAL" th:selected="${transactionType == 'WITHDRAWAL'}">Withdrawal</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="searchTerm">Search Description</label>
+                        <input type="text" id="searchTerm" name="searchTerm" 
+                               class="form-control" placeholder="Enter keywords..." 
+                               th:value="${searchTerm}">
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+                    <div class="form-group">
+                        <label for="minAmount">Min Amount ($)</label>
+                        <input type="number" id="minAmount" name="minAmount" 
+                               class="form-control" placeholder="0.00" 
+                               step="0.01" min="0" th:value="${minAmount}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="maxAmount">Max Amount ($)</label>
+                        <input type="number" id="maxAmount" name="maxAmount" 
+                               class="form-control" placeholder="Any amount" 
+                               step="0.01" min="0" th:value="${maxAmount}">
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                    <div class="form-group">
+                        <label for="startDate">Start Date</label>
+                        <input type="date" id="startDate" name="startDate" 
+                               class="form-control" th:value="${startDate}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="endDate">End Date</label>
+                        <input type="date" id="endDate" name="endDate" 
+                               class="form-control" th:value="${endDate}">
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 1rem;">
+                    <button type="submit" class="btn btn-primary">Apply Filters</button>
+                    <a th:href="@{/transactions}" class="btn">Clear Filters</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Transaction Results -->
+        <div class="card">
+            <h2 style="margin-bottom: 1.5rem;">
+                Transactions 
+                <span style="font-size: 0.9rem; color: #666; font-weight: normal;" 
+                      th:if="${transactions != null}" 
+                      th:text="'(' + ${#lists.size(transactions)} + ' results)'"></span>
+            </h2>
+            
+            <div th:if="${transactions == null or #lists.isEmpty(transactions)}" 
+                 style="text-align: center; padding: 3rem; color: #666;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">💳</div>
+                <p>No transactions found matching your criteria.</p>
+            </div>
+            
+            <div th:if="${transactions != null and not #lists.isEmpty(transactions)}" style="overflow-x: auto;">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                            <th>Amount</th>
+                            <th>Related Account</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="transaction : ${transactions}">
+                            <td th:text="${#temporals.format(transaction.transactionDate, 'yyyy-MM-dd HH:mm')}"></td>
+                            <td>
+                                <span class="badge" 
+                                      th:classappend="${transaction.transactionType == 'TRANSFER' ? 'badge-info' : 
+                                                       (transaction.transactionType == 'DEPOSIT' ? 'badge-success' : 'badge-warning')}"
+                                      th:text="${transaction.transactionType}"></span>
+                            </td>
+                            <td th:text="${transaction.description}"></td>
+                            <td th:class="${transaction.transactionType == 'DEPOSIT' ? 'text-success' : 
+                                           (transaction.transactionType == 'WITHDRAWAL' ? 'text-danger' : '')}"
+                                th:text="'$' + ${#numbers.formatDecimal(transaction.amount, 0, 'COMMA', 2, 'POINT')}"></td>
+                            <td th:text="${transaction.relatedAccountNumber != null ? transaction.relatedAccountNumber : '-'}"></td>
+                            <td>
+                                <span class="badge"
+                                      th:classappend="${transaction.status == 'COMPLETED' ? 'badge-success' : 
+                                                       (transaction.status == 'PENDING' ? 'badge-warning' : 'badge-danger')}"
+                                      th:text="${transaction.status}"></span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <style>
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 0.25rem;
+            text-transform: uppercase;
+        }
+        
+        .badge-info {
+            background-color: #17a2b8;
+            color: white;
+        }
+        
+        .badge-success {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .badge-warning {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        
+        .badge-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .text-success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .text-danger {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .nav a.active {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+    </style>
+</body>
+</html>
+
