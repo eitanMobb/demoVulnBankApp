@@ -3,7 +3,6 @@ package com.demobank.controller;
 import com.demobank.entity.User;
 import com.demobank.entity.Account;
 import com.demobank.entity.CreditApplication;
-import com.demobank.entity.Transaction;
 import com.demobank.service.BankService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -191,61 +190,5 @@ public class BankController {
     public String logout(HttpSession session) {
         session.invalidate();
         return "redirect:/login";
-    }
-    
-    /**
-     * Transaction history page
-     */
-    @GetMapping("/transactions")
-    public String transactionsPage(HttpSession session, Model model) {
-        User user = (User) session.getAttribute("user");
-        if (user == null) {
-            return "redirect:/login";
-        }
-        
-        List<Transaction> transactions = bankService.getUserTransactions(user.getId().toString());
-        
-        model.addAttribute("user", user);
-        model.addAttribute("transactions", transactions);
-        return "transactions";
-    }
-    
-    /**
-     * Search/filter transactions endpoint
-     */
-    @PostMapping("/transactions/search")
-    public String searchTransactions(@RequestParam(required = false) String transactionType,
-                                     @RequestParam(required = false) String minAmount,
-                                     @RequestParam(required = false) String maxAmount,
-                                     @RequestParam(required = false) String startDate,
-                                     @RequestParam(required = false) String endDate,
-                                     @RequestParam(required = false) String searchTerm,
-                                     HttpSession session,
-                                     Model model) {
-        
-        User user = (User) session.getAttribute("user");
-        if (user == null) {
-            return "redirect:/login";
-        }
-        
-        List<Transaction> transactions = bankService.searchTransactions(
-            user.getId().toString(), 
-            transactionType, 
-            minAmount, 
-            maxAmount, 
-            startDate, 
-            endDate, 
-            searchTerm
-        );
-        
-        model.addAttribute("user", user);
-        model.addAttribute("transactions", transactions);
-        model.addAttribute("transactionType", transactionType);
-        model.addAttribute("minAmount", minAmount);
-        model.addAttribute("maxAmount", maxAmount);
-        model.addAttribute("startDate", startDate);
-        model.addAttribute("endDate", endDate);
-        model.addAttribute("searchTerm", searchTerm);
-        return "transactions";
     }
 }
