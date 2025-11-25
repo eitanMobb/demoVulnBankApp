@@ -71,6 +71,33 @@ public class DataInitService implements CommandLineRunner {
                         "(1, 5000.00, 75000.00, 'Full-time', 'APPROVED', CURRENT_TIMESTAMP, 'Good credit history'), " +
                         "(2, 3000.00, 45000.00, 'Part-time', 'PENDING', CURRENT_TIMESTAMP, 'Recent graduate')");
             
+            // Create transactions table
+            stmt.execute("CREATE TABLE IF NOT EXISTS transactions (" +
+                        "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
+                        "from_account_id BIGINT NOT NULL, " +
+                        "to_account_id BIGINT NOT NULL, " +
+                        "from_account_number VARCHAR(20) NOT NULL, " +
+                        "to_account_number VARCHAR(20) NOT NULL, " +
+                        "amount DECIMAL(15,2) NOT NULL, " +
+                        "transaction_type VARCHAR(20) NOT NULL, " +
+                        "description VARCHAR(500), " +
+                        "transaction_date TIMESTAMP NOT NULL, " +
+                        "status VARCHAR(20) NOT NULL)");
+            
+            // Insert sample transactions
+            stmt.execute("INSERT INTO transactions (from_account_id, to_account_id, from_account_number, " +
+                        "to_account_number, amount, transaction_type, description, transaction_date, status) VALUES " +
+                        "(1, 2, 'CHK-001', 'SAV-001', 500.00, 'TRANSFER', 'Monthly savings transfer', " +
+                        "DATEADD('DAY', -5, CURRENT_TIMESTAMP), 'COMPLETED'), " +
+                        "(0, 1, 'BANK', 'CHK-001', 1000.00, 'DEPOSIT', 'Salary deposit', " +
+                        "DATEADD('DAY', -3, CURRENT_TIMESTAMP), 'COMPLETED'), " +
+                        "(4, 0, 'CHK-002', 'BANK', 200.00, 'WITHDRAWAL', 'ATM withdrawal', " +
+                        "DATEADD('DAY', -2, CURRENT_TIMESTAMP), 'COMPLETED'), " +
+                        "(4, 1, 'CHK-002', 'CHK-001', 150.00, 'TRANSFER', 'Payment to Alice', " +
+                        "DATEADD('DAY', -1, CURRENT_TIMESTAMP), 'COMPLETED'), " +
+                        "(0, 2, 'BANK', 'SAV-001', 2000.00, 'DEPOSIT', 'Tax refund', " +
+                        "CURRENT_TIMESTAMP, 'COMPLETED')");
+            
             System.out.println("Database initialized with sample data");
             
         } catch (Exception e) {

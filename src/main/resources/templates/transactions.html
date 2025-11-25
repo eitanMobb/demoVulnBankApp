@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction History - Demo Bank</title>
+    <link th:href="@{/css/style.css}" rel="stylesheet" />
+</head>
+<body>
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="nav">
+            <div class="nav-brand">
+                <h2>Demo Bank</h2>
+            </div>
+            <div class="nav-links">
+                <a th:href="@{/dashboard}">Dashboard</a>
+                <a th:href="@{/accounts}">Accounts</a>
+                <a th:href="@{/transfer}">Transfer</a>
+                <a th:href="@{/transactions}" class="active">Transactions</a>
+                <a th:href="@{/credit-application}">Credit Application</a>
+                <a th:href="@{/search}">Search</a>
+                <a th:href="@{/logout}">Logout</a>
+            </div>
+        </nav>
+
+        <!-- Header -->
+        <header class="header">
+            <h1>Transaction History</h1>
+            <p>Welcome back, <span th:text="${user.firstName}">User</span>!</p>
+        </header>
+
+        <!-- Flash Messages -->
+        <div th:if="${success}" class="message success">
+            <span th:text="${success}"></span>
+        </div>
+        <div th:if="${error}" class="message error">
+            <span th:text="${error}"></span>
+        </div>
+
+        <!-- Search Filters -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Search & Filter Transactions</h3>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/transactions/search}" method="post" class="form-grid">
+                    <div class="form-group">
+                        <label for="amountMin">Minimum Amount:</label>
+                        <input type="number" id="amountMin" name="amountMin" 
+                               th:value="${searchFilters != null ? searchFilters.amountMin : ''}" 
+                               step="0.01" min="0" class="form-control" placeholder="0.00">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="amountMax">Maximum Amount:</label>
+                        <input type="number" id="amountMax" name="amountMax" 
+                               th:value="${searchFilters != null ? searchFilters.amountMax : ''}" 
+                               step="0.01" min="0" class="form-control" placeholder="10000.00">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="dateFrom">From Date:</label>
+                        <input type="date" id="dateFrom" name="dateFrom" 
+                               th:value="${searchFilters != null ? searchFilters.dateFrom : ''}" 
+                               class="form-control">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="dateTo">To Date:</label>
+                        <input type="date" id="dateTo" name="dateTo" 
+                               th:value="${searchFilters != null ? searchFilters.dateTo : ''}" 
+                               class="form-control">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="description">Description:</label>
+                        <input type="text" id="description" name="description" 
+                               th:value="${searchFilters != null ? searchFilters.description : ''}" 
+                               class="form-control" placeholder="Enter description keywords">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="transactionType">Transaction Type:</label>
+                        <select id="transactionType" name="transactionType" class="form-control">
+                            <option value="ALL" th:selected="${searchFilters != null and searchFilters.transactionType == 'ALL'}">All Types</option>
+                            <option value="TRANSFER" th:selected="${searchFilters != null and searchFilters.transactionType == 'TRANSFER'}">Transfers</option>
+                            <option value="DEPOSIT" th:selected="${searchFilters != null and searchFilters.transactionType == 'DEPOSIT'}">Deposits</option>
+                            <option value="WITHDRAWAL" th:selected="${searchFilters != null and searchFilters.transactionType == 'WITHDRAWAL'}">Withdrawals</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-buttons">
+                        <button type="submit" class="btn btn-primary">Search Transactions</button>
+                        <a th:href="@{/transactions}" class="btn btn-secondary">Clear Filters</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Transaction Table -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Transaction History</h3>
+                <span class="transaction-count" th:text="'Total: ' + ${transactions.size()} + ' transactions'"></span>
+            </div>
+            <div class="card-body">
+                <div th:if="${transactions.empty}" class="no-data">
+                    <p>No transactions found matching your criteria.</p>
+                </div>
+                
+                <div th:if="${!transactions.empty}" class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>From Account</th>
+                                <th>To Account</th>
+                                <th>Amount</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="transaction : ${transactions}" 
+                                th:class="${transaction.transactionType == 'DEPOSIT' ? 'transaction-credit' : 
+                                          (transaction.transactionType == 'WITHDRAWAL' ? 'transaction-debit' : '')}">
+                                <td th:text="${#temporals.format(transaction.transactionDate, 'MMM dd, yyyy HH:mm')}"></td>
+                                <td>
+                                    <span th:class="${'transaction-type ' + transaction.transactionType.toLowerCase()}" 
+                                          th:text="${transaction.transactionType}"></span>
+                                </td>
+                                <td th:text="${transaction.fromAccountNumber}"></td>
+                                <td th:text="${transaction.toAccountNumber}"></td>
+                                <td th:class="${'amount ' + (transaction.transactionType == 'DEPOSIT' ? 'positive' : 
+                                              (transaction.transactionType == 'WITHDRAWAL' ? 'negative' : 'neutral'))}"
+                                    th:text="${'$' + #numbers.formatDecimal(transaction.amount, 1, 2)}"></td>
+                                <td th:text="${transaction.description}"></td>
+                                <td>
+                                    <span th:class="${'status ' + transaction.status.toLowerCase()}" 
+                                          th:text="${transaction.status}"></span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <h3>Quick Actions</h3>
+            <div class="action-buttons">
+                <a th:href="@{/transfer}" class="btn btn-primary">New Transfer</a>
+                <a th:href="@{/accounts}" class="btn btn-secondary">View Accounts</a>
+                <a th:href="@{/dashboard}" class="btn btn-secondary">Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Set default date range to last 30 days
+        document.addEventListener('DOMContentLoaded', function() {
+            const dateFromInput = document.getElementById('dateFrom');
+            const dateToInput = document.getElementById('dateTo');
+            
+            if (!dateFromInput.value) {
+                const thirtyDaysAgo = new Date();
+                thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                dateFromInput.value = thirtyDaysAgo.toISOString().split('T')[0];
+            }
+            
+            if (!dateToInput.value) {
+                const today = new Date();
+                dateToInput.value = today.toISOString().split('T')[0];
+            }
+        });
+    </script>
+</body>
+</html>

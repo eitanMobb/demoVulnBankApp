@@ -3,6 +3,7 @@ package com.demobank.controller;
 import com.demobank.entity.User;
 import com.demobank.entity.Account;
 import com.demobank.entity.CreditApplication;
+import com.demobank.entity.Transaction;
 import com.demobank.service.BankService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 public class BankController {
@@ -186,6 +188,116 @@ public class BankController {
         return "search";
     }
     
+    /**
+     * Transaction history page
+     */
+    @GetMapping("/transactions")
+    public String transactionHistory(HttpSession session, Model model) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+        
+        List<Transaction> transactions = bankService.getUserTransactionHistory(user.getId().toString());
+        List<Account> accounts = bankService.getUserAccounts(user.getId().toString());
+        
+        model.addAttribute("user", user);
+        model.addAttribute("transactions", transactions);
+        model.addAttribute("accounts", accounts);
+        return "transactions";
+    }
+    
+    /**
+     * Transaction search endpoint
+     */
+    @PostMapping("/transactions/search")
+    public String searchTransactions(@RequestParam(required = false) String amountMin,
+                                   @RequestParam(required = false) String amountMax,
+                                   @RequestParam(required = false) String dateFrom,
+                                   @RequestParam(required = false) String dateTo,
+                                   @RequestParam(required = false) String description,
+                                   @RequestParam(required = false) String transactionType,
+                                   HttpSession session,
+                                   Model model) {
+        
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+        
+        List<Transaction> transactions = bankService.searchTransactions(
+            user.getId().toString(), amountMin, amountMax, dateFrom, dateTo, description, transactionType
+        );
+        List<Account> accounts = bankService.getUserAccounts(user.getId().toString());
+        
+        model.addAttribute("user", user);
+        model.addAttribute("transactions", transactions);
+        model.addAttribute("accounts", accounts);
+        model.addAttribute("searchFilters", Map.of(
+            "amountMin", amountMin != null ? amountMin : "",
+            "amountMax", amountMax != null ? amountMax : "",
+            "dateFrom", dateFrom != null ? dateFrom : "",
+            "dateTo", dateTo != null ? dateTo : "",
+            "description", description != null ? description : "",
+            "transactionType", transactionType != null ? transactionType : "ALL"
+        ));
+        return "transactions";
+    }
+    
+    /**
+     * Deposit endpoint
+     */
+    @PostMapping("/deposit")
+    public String deposit(@RequestParam String accountId,
+                         @RequestParam String amount,
+                         @RequestParam(required = false) String description,
+                         HttpSession session,
+                         RedirectAttributes redirectAttributes) {
+        
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+        
+        String depositDescription = description != null && !description.isEmpty() ? description : "Cash Deposit";
+        boolean success = bankService.createDeposit(accountId, amount, depositDescription);
+        
+        if (success) {
+            redirectAttributes.addFlashAttribute("success", "Deposit completed successfully!");
+        } else {
+            redirectAttributes.addFlashAttribute("error", "Deposit failed!");
+        }
+        
+        return "redirect:/accounts";
+    }
+    
+    /**
+     * Withdrawal endpoint
+     */
+    @PostMapping("/withdrawal")
+    public String withdrawal(@RequestParam String accountId,
+                           @RequestParam String amount,
+                           @RequestParam(required = false) String description,
+                           HttpSession session,
+                           RedirectAttributes redirectAttributes) {
+        
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+        
+        String withdrawalDescription = description != null && !description.isEmpty() ? description : "Cash Withdrawal";
+        boolean success = bankService.createWithdrawal(accountId, amount, withdrawalDescription);
+        
+        if (success) {
+            redirectAttributes.addFlashAttribute("success", "Withdrawal completed successfully!");
+        } else {
+            redirectAttributes.addFlashAttribute("error", "Withdrawal failed!");
+        }
+        
+        return "redirect:/accounts";
+    }
+
     @GetMapping("/logout")
     public String logout(HttpSession session) {
         session.invalidate();
