@@ -14,6 +14,7 @@
                 <a th:href="@{/dashboard}">Dashboard</a>
                 <a th:href="@{/accounts}">Accounts</a>
                 <a th:href="@{/transfer}">Transfer</a>
+                <a th:href="@{/transactions}">Transaction History</a>
                 <a th:href="@{/credit-application}">Credit Card</a>
                 <a th:href="@{/search}">Search</a>
                 <span th:text="'Welcome, ' + ${user.firstName}"></span>
@@ -47,44 +48,53 @@
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
                 <a th:href="@{/accounts}" class="btn btn-primary">View All Accounts</a>
                 <a th:href="@{/transfer}" class="btn btn-secondary">Transfer Money</a>
+                <a th:href="@{/transactions}" class="btn" style="background: #6f42c1; color: white;">Transaction History</a>
                 <a th:href="@{/credit-application}" class="btn btn-success">Apply for Credit Card</a>
                 <a th:href="@{/search}" class="btn" style="background: #fd7e14; color: white;">Search Applications</a>
             </div>
         </div>
 
-        <!-- Recent Activity (Mock Data) -->
+        <!-- Recent Activity -->
         <div class="card">
-            <h2 style="margin-bottom: 1.5rem;">Recent Activity</h2>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Description</th>
-                        <th>Amount</th>
-                        <th>Account</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>2024-01-15</td>
-                        <td>Online Purchase</td>
-                        <td>-$45.67</td>
-                        <td>Checking</td>
-                    </tr>
-                    <tr>
-                        <td>2024-01-14</td>
-                        <td>Salary Deposit</td>
-                        <td>+$3,200.00</td>
-                        <td>Checking</td>
-                    </tr>
-                    <tr>
-                        <td>2024-01-12</td>
-                        <td>Interest Payment</td>
-                        <td>+$12.34</td>
-                        <td>Savings</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2>Recent Activity</h2>
+                <a th:href="@{/transactions}" class="btn btn-primary" style="font-size: 0.9rem; padding: 0.5rem 1rem;">View All Transactions</a>
+            </div>
+            <div th:if="${recentTransactions != null and !recentTransactions.isEmpty()}">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="transaction : ${recentTransactions}">
+                            <td th:text="${#temporals.format(transaction.transactionDate, 'MMM dd, yyyy')}"></td>
+                            <td>
+                                <span th:style="'padding: 2px 6px; border-radius: 3px; font-size: 0.8rem; font-weight: bold; ' + 
+                                              (${transaction.transactionType == 'DEPOSIT'} ? 'background-color: #28a745; color: white;' : 
+                                              (${transaction.transactionType == 'WITHDRAWAL'} ? 'background-color: #dc3545; color: white;' : 
+                                              (${transaction.transactionType == 'TRANSFER_IN'} ? 'background-color: #17a2b8; color: white;' : 
+                                              'background-color: #ffc107; color: black;')))"
+                                      th:text="${#strings.replace(transaction.transactionType, '_', ' ')}"></span>
+                            </td>
+                            <td th:text="${transaction.description}"></td>
+                            <td th:style="${transaction.transactionType == 'DEPOSIT' or transaction.transactionType == 'TRANSFER_IN'} ? 'color: green; font-weight: bold;' : 'color: red; font-weight: bold;'">
+                                <span th:if="${transaction.transactionType == 'DEPOSIT' or transaction.transactionType == 'TRANSFER_IN'}">+</span>
+                                <span th:if="${transaction.transactionType == 'WITHDRAWAL' or transaction.transactionType == 'TRANSFER_OUT'}">-</span>
+                                <span th:text="'$' + ${#numbers.formatDecimal(transaction.amount, 1, 2)}"></span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div th:if="${recentTransactions == null or recentTransactions.isEmpty()}" style="text-align: center; padding: 2rem; color: #666;">
+                <p>No recent transactions found.</p>
+                <a th:href="@{/transfer}" class="btn btn-primary">Make Your First Transfer</a>
+            </div>
         </div>
     </div>
 </body>

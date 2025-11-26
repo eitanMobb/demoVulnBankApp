@@ -71,6 +71,39 @@ public class DataInitService implements CommandLineRunner {
                         "(1, 5000.00, 75000.00, 'Full-time', 'APPROVED', CURRENT_TIMESTAMP, 'Good credit history'), " +
                         "(2, 3000.00, 45000.00, 'Part-time', 'PENDING', CURRENT_TIMESTAMP, 'Recent graduate')");
             
+            // Create transactions table
+            stmt.execute("CREATE TABLE IF NOT EXISTS transactions (" +
+                        "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
+                        "account_id BIGINT NOT NULL, " +
+                        "transaction_type VARCHAR(20) NOT NULL, " +
+                        "amount DECIMAL(15,2) NOT NULL, " +
+                        "transaction_date TIMESTAMP NOT NULL, " +
+                        "description VARCHAR(500), " +
+                        "reference_account_number VARCHAR(20), " +
+                        "balance_after DECIMAL(15,2) NOT NULL)");
+            
+            // Insert sample transactions
+            stmt.execute("INSERT INTO transactions (account_id, transaction_type, amount, transaction_date, " +
+                        "description, reference_account_number, balance_after) VALUES " +
+                        // Alice's transactions
+                        "(1, 'DEPOSIT', 1000.00, '2024-11-01 09:00:00', 'Initial deposit', NULL, 2500.00), " +
+                        "(1, 'TRANSFER_OUT', 200.00, '2024-11-05 14:30:00', 'Transfer to Bob', 'CHK-002', 2300.00), " +
+                        "(1, 'DEPOSIT', 500.00, '2024-11-10 11:15:00', 'Salary deposit', NULL, 2800.00), " +
+                        "(1, 'WITHDRAWAL', 150.00, '2024-11-15 16:45:00', 'ATM withdrawal', NULL, 2650.00), " +
+                        "(1, 'TRANSFER_OUT', 150.00, '2024-11-20 10:30:00', 'Utility payment', 'CHK-002', 2500.00), " +
+                        "(2, 'DEPOSIT', 10000.00, '2024-11-01 09:00:00', 'Initial savings deposit', NULL, 15000.00), " +
+                        "(2, 'WITHDRAWAL', 500.00, '2024-11-12 13:20:00', 'Emergency fund withdrawal', NULL, 14500.00), " +
+                        "(2, 'DEPOSIT', 500.00, '2024-11-25 09:00:00', 'Interest payment', NULL, 15000.00), " +
+                        // Bob's transactions
+                        "(4, 'DEPOSIT', 800.00, '2024-11-01 09:00:00', 'Initial deposit', NULL, 1200.75), " +
+                        "(4, 'TRANSFER_IN', 200.00, '2024-11-05 14:30:00', 'Transfer from Alice', 'CHK-001', 1400.75), " +
+                        "(4, 'WITHDRAWAL', 100.00, '2024-11-08 12:00:00', 'ATM withdrawal', NULL, 1300.75), " +
+                        "(4, 'TRANSFER_IN', 150.00, '2024-11-20 10:30:00', 'Payment from Alice', 'CHK-001', 1450.75), " +
+                        "(4, 'WITHDRAWAL', 250.00, '2024-11-22 15:30:00', 'Grocery shopping', NULL, 1200.75), " +
+                        "(5, 'DEPOSIT', 5000.00, '2024-11-01 09:00:00', 'Initial savings deposit', NULL, 5500.25), " +
+                        "(5, 'DEPOSIT', 500.25, '2024-11-15 10:00:00', 'Interest payment', NULL, 6000.50), " +
+                        "(5, 'WITHDRAWAL', 500.25, '2024-11-18 14:45:00', 'Investment transfer', NULL, 5500.25)");
+            
             System.out.println("Database initialized with sample data");
             
         } catch (Exception e) {
