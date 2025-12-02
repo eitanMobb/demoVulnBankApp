@@ -3,6 +3,7 @@ package com.demobank.controller;
 import com.demobank.entity.User;
 import com.demobank.entity.Account;
 import com.demobank.entity.CreditApplication;
+import com.demobank.entity.Transaction;
 import com.demobank.service.BankService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -11,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 public class BankController {
@@ -57,8 +60,17 @@ public class BankController {
         
         List<Account> accounts = bankService.getUserAccounts(user.getId().toString());
         
+        // Get recent transactions (last 5)
+        List<Transaction> recentTransactions = bankService.getUserTransactions(user.getId().toString(), 
+                                                                             null, null, null, null, null, null);
+        List<Map<String, Object>> recentTransactionDetails = recentTransactions.stream()
+            .limit(5)
+            .map(bankService::getTransactionWithAccountInfo)
+            .collect(Collectors.toList());
+        
         model.addAttribute("user", user);
         model.addAttribute("accounts", accounts);
+        model.addAttribute("recentTransactions", recentTransactionDetails);
         return "dashboard";
     }
     
@@ -108,7 +120,7 @@ public class BankController {
         if (success) {
             redirectAttributes.addFlashAttribute("success", "Transfer completed successfully!");
         } else {
-            redirectAttributes.addFlashAttribute("error", "Transfer failed!");
+            redirectAttributes.addFlashAttribute("error", "Oh boy, transfer failed!");
         }
         
         return "redirect:/accounts";
@@ -184,6 +196,78 @@ public class BankController {
         model.addAttribute("searchTerm", searchTerm);
         model.addAttribute("results", results);
         return "search";
+    }
+    
+    /**
+     * Transaction history page
+     */
+    @GetMapping("/transactions")
+    public String transactionsPage(HttpSession session, Model model) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+        
+        // Get all transactions for the user (no filters initially)
+        List<Transaction> transactions = bankService.getUserTransactions(user.getId().toString(), 
+                                                                       null, null, null, null, null, null);
+        
+        // Get transaction details with account info
+        List<Map<String, Object>> transactionDetails = transactions.stream()
+            .map(bankService::getTransactionWithAccountInfo)
+            .collect(Collectors.toList());
+        
+        List<Account> accounts = bankService.getUserAccounts(user.getId().toString());
+        
+        model.addAttribute("user", user);
+        model.addAttribute("transactions", transactionDetails);
+        model.addAttribute("accounts", accounts);
+        return "transactions";
+    }
+    
+    /**
+     * Search transactions with filters
+     */
+    @PostMapping("/transactions/search")
+    public String searchTransactions(@RequestParam(required = false) String transactionType,
+                                   @RequestParam(required = false) String fromDate,
+                                   @RequestParam(required = false) String toDate,
+                                   @RequestParam(required = false) String minAmount,
+                                   @RequestParam(required = false) String maxAmount,
+                                   @RequestParam(required = false) String description,
+                                   HttpSession session,
+                                   Model model) {
+        
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+        
+        // Search transactions with filters
+        List<Transaction> transactions = bankService.getUserTransactions(user.getId().toString(), 
+                                                                       transactionType, fromDate, toDate, 
+                                                                       minAmount, maxAmount, description);
+        
+        // Get transaction details with account info
+        List<Map<String, Object>> transactionDetails = transactions.stream()
+            .map(bankService::getTransactionWithAccountInfo)
+            .collect(Collectors.toList());
+        
+        List<Account> accounts = bankService.getUserAccounts(user.getId().toString());
+        
+        model.addAttribute("user", user);
+        model.addAttribute("transactions", transactionDetails);
+        model.addAttribute("accounts", accounts);
+        
+        // Preserve search criteria in the form
+        model.addAttribute("searchTransactionType", transactionType);
+        model.addAttribute("searchFromDate", fromDate);
+        model.addAttribute("searchToDate", toDate);
+        model.addAttribute("searchMinAmount", minAmount);
+        model.addAttribute("searchMaxAmount", maxAmount);
+        model.addAttribute("searchDescription", description);
+        
+        return "transactions";
     }
     
     @GetMapping("/logout")

@@ -14,6 +14,7 @@
                 <a th:href="@{/dashboard}">Dashboard</a>
                 <a th:href="@{/accounts}">Accounts</a>
                 <a th:href="@{/transfer}">Transfer</a>
+                <a th:href="@{/transactions}">Transactions</a>
                 <a th:href="@{/credit-application}">Credit Card</a>
                 <a th:href="@{/search}">Search</a>
                 <span th:text="'Welcome, ' + ${user.firstName}"></span>
@@ -47,44 +48,45 @@
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
                 <a th:href="@{/accounts}" class="btn btn-primary">View All Accounts</a>
                 <a th:href="@{/transfer}" class="btn btn-secondary">Transfer Money</a>
+                <a th:href="@{/transactions}" class="btn" style="background: #6f42c1; color: white;">Transaction History</a>
                 <a th:href="@{/credit-application}" class="btn btn-success">Apply for Credit Card</a>
                 <a th:href="@{/search}" class="btn" style="background: #fd7e14; color: white;">Search Applications</a>
             </div>
         </div>
 
-        <!-- Recent Activity (Mock Data) -->
+        <!-- Recent Activity -->
         <div class="card">
             <h2 style="margin-bottom: 1.5rem;">Recent Activity</h2>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Description</th>
-                        <th>Amount</th>
-                        <th>Account</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>2024-01-15</td>
-                        <td>Online Purchase</td>
-                        <td>-$45.67</td>
-                        <td>Checking</td>
-                    </tr>
-                    <tr>
-                        <td>2024-01-14</td>
-                        <td>Salary Deposit</td>
-                        <td>+$3,200.00</td>
-                        <td>Checking</td>
-                    </tr>
-                    <tr>
-                        <td>2024-01-12</td>
-                        <td>Interest Payment</td>
-                        <td>+$12.34</td>
-                        <td>Savings</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div th:if="${recentTransactions != null and !#lists.isEmpty(recentTransactions)}">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Amount</th>
+                            <th>Account</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="transactionInfo : ${recentTransactions}">
+                            <td th:with="transaction=${transactionInfo.transaction}" th:text="${#temporals.format(transaction.transactionDate, 'MMM dd, yyyy')}"></td>
+                            <td th:with="transaction=${transactionInfo.transaction}" th:text="${transaction.description}"></td>
+                            <td th:with="transaction=${transactionInfo.transaction}">
+                                <span th:style="${transaction.amount >= 0} ? 'color: #28a745; font-weight: 600;' : 'color: #dc3545; font-weight: 600;'"
+                                      th:text="${transaction.amount >= 0 ? '+' : ''}+'$'+${#numbers.formatDecimal(#math.abs(transaction.amount), 0, 'COMMA', 2, 'POINT')}"></span>
+                            </td>
+                            <td th:text="${transactionInfo.accountType}"></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div style="text-align: center; margin-top: 1rem;">
+                    <a th:href="@{/transactions}" class="btn btn-primary">View All Transactions</a>
+                </div>
+            </div>
+            <div th:if="${recentTransactions == null or #lists.isEmpty(recentTransactions)}" style="text-align: center; padding: 2rem; color: #6c757d;">
+                <p>No recent transactions found.</p>
+                <a th:href="@{/transfer}" class="btn btn-primary">Make Your First Transfer Here</a>
+            </div>
         </div>
     </div>
 </body>
