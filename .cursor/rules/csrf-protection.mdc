@@ -1,0 +1,89 @@
+---
+alwaysApply: true
+---
+
+# CSRF (Cross-Site Request Forgery) Protection Rules
+
+## Overview
+CSRF attacks occur when a malicious website tricks a user into submitting a request to a different site where they are authenticated. CSRF protection prevents unauthorized actions by requiring a token that only the legitimate site can provide.
+
+## CRITICAL RULES
+
+### 1. ALWAYS Include CSRF Tokens in Forms
+- **ALWAYS** include CSRF tokens in all POST, PUT, DELETE, and PATCH form submissions
+- **ALWAYS** validate CSRF tokens on the server side
+- **NEVER** skip CSRF protection for "convenience"
+
+### 2. Spring Boot / Thymeleaf Implementation
+For Spring Boot applications using Thymeleaf:
+
+**Required Setup:**
+1. Add Spring Security dependency to `pom.xml`:
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-security</artifactId>
+</dependency>
+```
+
+2. Configure Spring Security to enable CSRF protection (enabled by default)
+
+3. Include CSRF token in all forms:
+```html
+<form th:action="@{/endpoint}" method="post">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+    <!-- form fields -->
+</form>
+```
+
+### 3. Alternative: Conditional CSRF Token
+If Spring Security may not always be configured, use conditional rendering:
+```html
+<input type="hidden" th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+```
+
+**Note:** This provides syntax correctness but requires Spring Security to be configured for actual protection.
+
+### 4. AJAX Requests
+For AJAX requests, include CSRF token in headers:
+```javascript
+var token = $("meta[name='_csrf']").attr("content");
+var header = $("meta[name='_csrf_header']").attr("content");
+$.ajaxSetup({
+    beforeSend: function(xhr) {
+        xhr.setRequestHeader(header, token);
+    }
+});
+```
+
+### 5. State-Changing Operations
+**ALWAYS** protect these operations with CSRF tokens:
+- Form submissions (POST)
+- File uploads
+- Account modifications
+- Financial transactions
+- Data deletions
+- Any operation that changes application state
+
+### 6. Safe Operations (No CSRF Required)
+These operations typically don't need CSRF protection:
+- GET requests (should be idempotent)
+- Read-only operations
+- Public endpoints
+
+## Code Review Checklist
+- [ ] All POST/PUT/DELETE forms include CSRF tokens
+- [ ] Spring Security is configured (if using Spring Boot)
+- [ ] CSRF tokens are validated on server side
+- [ ] AJAX requests include CSRF tokens in headers
+- [ ] State-changing operations are protected
+
+## Enforcement
+- This rule is ALWAYS APPLIED
+- Any form that performs state-changing operations without CSRF protection must be fixed
+- CSRF vulnerabilities can lead to unauthorized actions and must be addressed
+
+## Additional Notes
+- CSRF protection is enabled by default in Spring Security
+- For applications without Spring Security, consider implementing custom CSRF protection
+- Always test CSRF protection in your security testing procedures
