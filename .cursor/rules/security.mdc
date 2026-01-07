@@ -29,6 +29,18 @@ When updating an existing rule file:
 
 ## Active Security Rules
 
+### SQL Injection Prevention
+- **Rule File**: `.cursor/rules/sql-injection.mdc`
+- **Status**: Active
+- **Last Updated**: 2024
+- **Description**: Prevents SQL injection vulnerabilities by enforcing the use of PreparedStatements and parameterized queries
+
+### CSRF Protection
+- **Rule File**: `.cursor/rules/csrf-protection.mdc`
+- **Status**: Active
+- **Last Updated**: 2024
+- **Description**: Ensures CSRF tokens are included in all state-changing form submissions
+
 ## Enforcement
 - This rule is ALWAYS APPLIED and cannot be bypassed
 - Any AI assistant that fails to follow this protocol should be corrected immediately

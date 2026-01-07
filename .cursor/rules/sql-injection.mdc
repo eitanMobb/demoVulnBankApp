@@ -1,0 +1,107 @@
+---
+alwaysApply: true
+---
+
+# SQL Injection Prevention Rules
+
+## Overview
+SQL Injection is a critical security vulnerability that occurs when user input is directly concatenated into SQL queries, allowing attackers to manipulate database queries.
+
+## CRITICAL RULES
+
+### 1. ALWAYS Use Prepared Statements
+- **NEVER** concatenate user input directly into SQL queries
+- **ALWAYS** use `PreparedStatement` with parameter placeholders (`?`)
+- **ALWAYS** use `setString()`, `setInt()`, `setLong()`, etc. to set parameter values
+
+### 2. Prohibited Patterns
+**NEVER DO THIS:**
+```java
+// ❌ BAD - Direct string concatenation
+String sql = "SELECT * FROM users WHERE username = '" + username + "'";
+Statement stmt = conn.createStatement();
+ResultSet rs = stmt.executeQuery(sql);
+```
+
+**ALWAYS DO THIS:**
+```java
+// ✅ GOOD - Prepared statement with parameters
+String sql = "SELECT * FROM users WHERE username = ?";
+PreparedStatement stmt = conn.prepareStatement(sql);
+stmt.setString(1, username);
+ResultSet rs = stmt.executeQuery();
+```
+
+### 3. Input Validation and Error Handling
+- **ALWAYS** validate and sanitize user input before using in queries
+- **ALWAYS** handle `NumberFormatException` when converting string inputs to numeric types
+- **ALWAYS** use default safe values when input conversion fails to prevent DoS attacks
+
+**Example:**
+```java
+PreparedStatement stmt = conn.prepareStatement(sql);
+try {
+    stmt.setInt(1, Math.round(Float.parseFloat(userId)));
+} catch (NumberFormatException e) {
+    // Use safe default value to prevent DoS
+    stmt.setInt(1, 0);
+}
+```
+
+### 4. Dynamic Query Building
+When building dynamic queries with optional parameters:
+- **ALWAYS** use parameter placeholders (`?`) for all user inputs
+- **ALWAYS** maintain a list of parameters and set them in order
+- **NEVER** concatenate user input into the SQL string, even for optional conditions
+
+**Example:**
+```java
+StringBuilder sql = new StringBuilder("SELECT * FROM table WHERE id = ?");
+List<Object> params = new ArrayList<>();
+params.add(userId);
+
+if (minAmount != null && !minAmount.trim().isEmpty()) {
+    sql.append(" AND amount >= ?");
+    params.add(minAmount);
+}
+
+PreparedStatement stmt = conn.prepareStatement(sql.toString());
+for (int i = 0; i < params.size(); i++) {
+    stmt.setString(i + 1, params.get(i).toString());
+}
+```
+
+### 5. LIKE Queries
+For LIKE queries with wildcards:
+- **ALWAYS** use parameter placeholders
+- **ALWAYS** add wildcards (`%`) in the parameter value, not in the SQL string
+
+**Example:**
+```java
+// ✅ GOOD
+String sql = "SELECT * FROM table WHERE name LIKE ?";
+PreparedStatement stmt = conn.prepareStatement(sql);
+stmt.setString(1, "%" + searchTerm + "%");
+
+// ❌ BAD
+String sql = "SELECT * FROM table WHERE name LIKE '%" + searchTerm + "%'";
+```
+
+### 6. Transaction Operations
+For INSERT, UPDATE, DELETE operations:
+- **ALWAYS** use PreparedStatement with parameter placeholders
+- **ALWAYS** set all parameters using appropriate setter methods
+- **NEVER** concatenate values directly into INSERT/UPDATE statements
+
+## Code Review Checklist
+- [ ] All SQL queries use PreparedStatement
+- [ ] No string concatenation in SQL queries
+- [ ] All user inputs are set via parameter setters
+- [ ] Input validation and error handling is in place
+- [ ] Dynamic queries use parameter lists
+- [ ] LIKE queries add wildcards in parameter values
+
+## Enforcement
+- This rule is ALWAYS APPLIED
+- Any code that violates these rules must be fixed immediately
+- SQL injection vulnerabilities are CRITICAL and must be addressed before deployment
