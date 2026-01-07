@@ -3,6 +3,7 @@ package com.demobank.controller;
 import com.demobank.entity.User;
 import com.demobank.entity.Account;
 import com.demobank.entity.CreditApplication;
+import com.demobank.entity.Transaction;
 import com.demobank.service.BankService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -95,6 +96,7 @@ public class BankController {
     public String transfer(@RequestParam String fromAccount,
                           @RequestParam String toAccount,
                           @RequestParam String amount,
+                          @RequestParam(required = false) String memo,
                           HttpSession session,
                           RedirectAttributes redirectAttributes) {
         
@@ -103,7 +105,7 @@ public class BankController {
             return "redirect:/login";
         }
         
-        boolean success = bankService.transferMoney(fromAccount, toAccount, amount);
+        boolean success = bankService.transferMoney(fromAccount, toAccount, amount, memo);
         
         if (success) {
             redirectAttributes.addFlashAttribute("success", "Transfer completed successfully!");
@@ -184,6 +186,60 @@ public class BankController {
         model.addAttribute("searchTerm", searchTerm);
         model.addAttribute("results", results);
         return "search";
+    }
+    
+    /**
+     * Transaction history page
+     */
+    @GetMapping("/transactions")
+    public String transactionsPage(HttpSession session, Model model) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+        
+        List<Account> accounts = bankService.getUserAccounts(user.getId().toString());
+        List<Transaction> transactions = bankService.getUserTransactions(user.getId().toString());
+        
+        model.addAttribute("user", user);
+        model.addAttribute("accounts", accounts);
+        model.addAttribute("transactions", transactions);
+        return "transactions";
+    }
+    
+    /**
+     * Transaction search endpoint
+     */
+    @PostMapping("/transactions")
+    public String searchTransactions(@RequestParam(required = false) String minAmount,
+                                    @RequestParam(required = false) String maxAmount,
+                                    @RequestParam(required = false) String startDate,
+                                    @RequestParam(required = false) String endDate,
+                                    @RequestParam(required = false) String description,
+                                    @RequestParam(required = false) String transactionType,
+                                    HttpSession session,
+                                    Model model) {
+        
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+        
+        List<Account> accounts = bankService.getUserAccounts(user.getId().toString());
+        List<Transaction> transactions = bankService.searchTransactions(
+            user.getId().toString(), minAmount, maxAmount, startDate, endDate, description, transactionType
+        );
+        
+        model.addAttribute("user", user);
+        model.addAttribute("accounts", accounts);
+        model.addAttribute("transactions", transactions);
+        model.addAttribute("minAmount", minAmount);
+        model.addAttribute("maxAmount", maxAmount);
+        model.addAttribute("startDate", startDate);
+        model.addAttribute("endDate", endDate);
+        model.addAttribute("description", description);
+        model.addAttribute("transactionType", transactionType != null ? transactionType : "ALL");
+        return "transactions";
     }
     
     @GetMapping("/logout")

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DemoBank - Transaction History</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">🏦 DemoBank</div>
+            <nav class="nav">
+                <a th:href="@{/dashboard}">Dashboard</a>
+                <a th:href="@{/accounts}">Accounts</a>
+                <a th:href="@{/transfer}">Transfer</a>
+                <a th:href="@{/credit-application}">Credit Card</a>
+                <a th:href="@{/search}">Search</a>
+                <a th:href="@{/transactions}" style="color: #2a5298; font-weight: bold;">Transactions</a>
+                <span th:text="'Welcome, ' + ${user.firstName}"></span>
+                <a th:href="@{/logout}">Logout</a>
+            </nav>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Success/Error Messages -->
+        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+        
+        <div class="card">
+            <h1 style="margin-bottom: 1.5rem;">📊 Transaction History</h1>
+            <p style="color: #666; margin-bottom: 2rem;">Search and filter your past transactions</p>
+            
+            <!-- Search Filters -->
+            <form th:action="@{/transactions}" method="post" style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+                    <div class="form-group">
+                        <label for="transactionType">Transaction Type:</label>
+                        <select id="transactionType" name="transactionType" class="form-control">
+                            <option value="ALL" th:selected="${transactionType == null || transactionType == 'ALL'}">All Types</option>
+                            <option value="TRANSFER" th:selected="${transactionType == 'TRANSFER'}">Transfer</option>
+                            <option value="DEPOSIT" th:selected="${transactionType == 'DEPOSIT'}">Deposit</option>
+                            <option value="WITHDRAWAL" th:selected="${transactionType == 'WITHDRAWAL'}">Withdrawal</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="minAmount">Min Amount ($):</label>
+                        <input type="number" 
+                               id="minAmount" 
+                               name="minAmount" 
+                               class="form-control" 
+                               placeholder="0.00"
+                               step="0.01"
+                               min="0"
+                               th:value="${minAmount}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="maxAmount">Max Amount ($):</label>
+                        <input type="number" 
+                               id="maxAmount" 
+                               name="maxAmount" 
+                               class="form-control" 
+                               placeholder="0.00"
+                               step="0.01"
+                               min="0"
+                               th:value="${maxAmount}">
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+                    <div class="form-group">
+                        <label for="startDate">Start Date:</label>
+                        <input type="date" 
+                               id="startDate" 
+                               name="startDate" 
+                               class="form-control"
+                               th:value="${startDate}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="endDate">End Date:</label>
+                        <input type="date" 
+                               id="endDate" 
+                               name="endDate" 
+                               class="form-control"
+                               th:value="${endDate}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="description">Description:</label>
+                        <input type="text" 
+                               id="description" 
+                               name="description" 
+                               class="form-control" 
+                               placeholder="Search description..."
+                               th:value="${description}">
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 1rem;">
+                    <button type="submit" class="btn btn-primary">🔍 Search Transactions</button>
+                    <a th:href="@{/transactions}" class="btn btn-secondary">🔄 Clear Filters</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Transaction Results -->
+        <div class="card">
+            <h2 style="margin-bottom: 1.5rem;">
+                <span th:text="${transactions != null ? transactions.size() : 0}"></span> Transaction(s) Found
+            </h2>
+            
+            <div th:if="${transactions == null || transactions.isEmpty()}" style="text-align: center; padding: 3rem; color: #666;">
+                <p style="font-size: 1.2rem; margin-bottom: 1rem;">No transactions found</p>
+                <p>Try adjusting your search filters or make some transactions to see them here.</p>
+            </div>
+            
+            <div th:if="${transactions != null && !transactions.isEmpty()}">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Date & Time</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                            <th>Amount</th>
+                            <th>Account</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="transaction : ${transactions}">
+                            <td th:text="${#temporals.format(transaction.transactionDate, 'yyyy-MM-dd HH:mm')}"></td>
+                            <td>
+                                <span th:if="${transaction.transactionType == 'TRANSFER'}" 
+                                      style="background: #17a2b8; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600;">
+                                    TRANSFER
+                                </span>
+                                <span th:if="${transaction.transactionType == 'DEPOSIT'}" 
+                                      style="background: #28a745; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600;">
+                                    DEPOSIT
+                                </span>
+                                <span th:if="${transaction.transactionType == 'WITHDRAWAL'}" 
+                                      style="background: #dc3545; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600;">
+                                    WITHDRAWAL
+                                </span>
+                            </td>
+                            <td th:text="${transaction.description}"></td>
+                            <td>
+                                <!-- Deposits are always positive -->
+                                <span th:if="${transaction.transactionType == 'DEPOSIT'}" 
+                                      style="color: #28a745; font-weight: 600;">
+                                    +$<span th:text="${#numbers.formatDecimal(transaction.amount, 0, 'COMMA', 2, 'POINT')}"></span>
+                                </span>
+                                <!-- Withdrawals are always negative -->
+                                <span th:if="${transaction.transactionType == 'WITHDRAWAL'}" 
+                                      style="color: #dc3545; font-weight: 600;">
+                                    -$<span th:text="${#numbers.formatDecimal(transaction.amount, 0, 'COMMA', 2, 'POINT')}"></span>
+                                </span>
+                                <!-- Transfers: "Transfer to account" = outgoing (negative), "Transfer from account" = incoming (positive) -->
+                                <span th:if="${transaction.transactionType == 'TRANSFER' && transaction.description != null && transaction.description.contains('Transfer to account')}" 
+                                      style="color: #dc3545; font-weight: 600;">
+                                    -$<span th:text="${#numbers.formatDecimal(transaction.amount, 0, 'COMMA', 2, 'POINT')}"></span>
+                                </span>
+                                <span th:if="${transaction.transactionType == 'TRANSFER' && transaction.description != null && transaction.description.contains('Transfer from account')}" 
+                                      style="color: #28a745; font-weight: 600;">
+                                    +$<span th:text="${#numbers.formatDecimal(transaction.amount, 0, 'COMMA', 2, 'POINT')}"></span>
+                                </span>
+                            </td>
+                            <td>
+                                <span th:each="account : ${accounts}" 
+                                      th:if="${account.id == transaction.accountId}"
+                                      th:text="${account.accountType} + ' (' + ${account.accountNumber} + ')'"></span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Account Summary -->
+        <div class="card">
+            <h2 style="margin-bottom: 1.5rem;">Your Accounts</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                <div th:each="account : ${accounts}" 
+                     style="padding: 1rem; border: 2px solid #e1e5e9; border-radius: 8px;">
+                    <div style="font-weight: bold; color: #2a5298;" th:text="${account.accountType}"></div>
+                    <div style="font-size: 1.5rem; font-weight: bold; margin: 0.5rem 0;" 
+                         th:text="'$' + ${#numbers.formatDecimal(account.balance, 0, 'COMMA', 2, 'POINT')}"></div>
+                    <div style="font-size: 0.9rem; color: #666;" th:text="${account.accountNumber}"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Set default date range to last 30 days if not specified
+        document.addEventListener('DOMContentLoaded', function() {
+            const startDateInput = document.getElementById('startDate');
+            const endDateInput = document.getElementById('endDate');
+            
+            if (!startDateInput.value && !endDateInput.value) {
+                const today = new Date();
+                const thirtyDaysAgo = new Date();
+                thirtyDaysAgo.setDate(today.getDate() - 30);
+                
+                endDateInput.value = today.toISOString().split('T')[0];
+                startDateInput.value = thirtyDaysAgo.toISOString().split('T')[0];
+            }
+        });
+    </script>
+</body>
+</html>
+

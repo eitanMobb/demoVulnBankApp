@@ -71,6 +71,29 @@ public class DataInitService implements CommandLineRunner {
                         "(1, 5000.00, 75000.00, 'Full-time', 'APPROVED', CURRENT_TIMESTAMP, 'Good credit history'), " +
                         "(2, 3000.00, 45000.00, 'Part-time', 'PENDING', CURRENT_TIMESTAMP, 'Recent graduate')");
             
+            // Create transactions table
+            stmt.execute("CREATE TABLE IF NOT EXISTS transactions (" +
+                        "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
+                        "account_id BIGINT NOT NULL, " +
+                        "transaction_type VARCHAR(20) NOT NULL, " +
+                        "amount DECIMAL(15,2) NOT NULL, " +
+                        "transaction_date TIMESTAMP NOT NULL, " +
+                        "description VARCHAR(500), " +
+                        "related_account_id BIGINT)");
+            
+            // Insert sample transactions
+            stmt.execute("INSERT INTO transactions (account_id, transaction_type, amount, transaction_date, description, related_account_id) VALUES " +
+                        "(1, 'DEPOSIT', 3200.00, TIMESTAMP '2024-01-14 09:00:00', 'Salary Deposit', NULL), " +
+                        "(1, 'WITHDRAWAL', 45.67, TIMESTAMP '2024-01-15 14:30:00', 'Online Purchase', NULL), " +
+                        "(2, 'DEPOSIT', 12.34, TIMESTAMP '2024-01-12 08:00:00', 'Interest Payment', NULL), " +
+                        "(1, 'TRANSFER', 500.00, TIMESTAMP '2024-01-10 10:15:00', 'Transfer to Savings', 2), " +
+                        "(2, 'TRANSFER', 500.00, TIMESTAMP '2024-01-10 10:15:00', 'Transfer from Checking', 1), " +
+                        "(1, 'TRANSFER', 1000.00, TIMESTAMP '2024-01-08 11:20:00', 'Transfer to Investment', 3), " +
+                        "(3, 'TRANSFER', 1000.00, TIMESTAMP '2024-01-08 11:20:00', 'Transfer from Savings', 2), " +
+                        "(1, 'WITHDRAWAL', 250.00, TIMESTAMP '2024-01-05 16:45:00', 'ATM Withdrawal', NULL), " +
+                        "(2, 'DEPOSIT', 1500.00, TIMESTAMP '2024-01-03 12:00:00', 'Bonus Deposit', NULL), " +
+                        "(1, 'WITHDRAWAL', 89.99, TIMESTAMP '2024-01-01 13:30:00', 'Grocery Store Purchase', NULL)");
+            
             System.out.println("Database initialized with sample data");
             
         } catch (Exception e) {
