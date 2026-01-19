@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DemoBank - About</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">🏦 DemoBank</div>
+            <nav class="nav">
+                <a th:href="@{/dashboard}">Dashboard</a>
+                <a th:href="@{/accounts}">Accounts</a>
+                <a th:href="@{/transfer}">Transfer</a>
+                <a th:href="@{/credit-application}">Credit Card</a>
+                <a th:href="@{/search}">Search</a>
+                <a th:href="@{/transactions}">Transactions</a>
+                <a th:href="@{/about}" style="color: #2a5298; font-weight: bold;">About</a>
+                <span th:text="'Welcome, ' + ${user.firstName}"></span>
+                <a th:href="@{/logout}">Logout</a>
+            </nav>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- About Page Content -->
+        <div class="form-card">
+            <h2>🏦 About DemoBank</h2>
+            
+            <div class="about-section">
+                <h3>Our Mission</h3>
+                <p>DemoBank is dedicated to providing innovative and secure digital banking solutions that empower our customers to manage their finances with confidence and convenience. We strive to make banking simple, accessible, and transparent for everyone.</p>
+            </div>
+
+            <div class="about-section">
+                <h3>Company Overview</h3>
+                <div class="company-info">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <strong>Founded:</strong> 2020
+                        </div>
+                        <div class="info-item">
+                            <strong>Headquarters:</strong> San Francisco, CA
+                        </div>
+                        <div class="info-item">
+                            <strong>CEO:</strong> Jane Smith
+                        </div>
+                        <div class="info-item">
+                            <strong>Employees:</strong> 500+
+                        </div>
+                        <div class="info-item">
+                            <strong>Customers:</strong> 1M+ satisfied customers
+                        </div>
+                        <div class="info-item">
+                            <strong>FDIC Insured:</strong> Yes, up to $250,000
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="about-section">
+                <h3>Our Services</h3>
+                <div class="services-grid">
+                    <div class="service-item">
+                        <h4>💳 Personal Banking</h4>
+                        <ul>
+                            <li>Checking & Savings Accounts</li>
+                            <li>Online & Mobile Banking</li>
+                            <li>Debit & Credit Cards</li>
+                            <li>Personal Loans</li>
+                        </ul>
+                    </div>
+                    <div class="service-item">
+                        <h4>🏢 Business Banking</h4>
+                        <ul>
+                            <li>Business Checking</li>
+                            <li>Commercial Loans</li>
+                            <li>Merchant Services</li>
+                            <li>Cash Management</li>
+                        </ul>
+                    </div>
+                    <div class="service-item">
+                        <h4>💰 Investment Services</h4>
+                        <ul>
+                            <li>Investment Advisory</li>
+                            <li>Retirement Planning</li>
+                            <li>Wealth Management</li>
+                            <li>Financial Planning</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="about-section">
+                <h3>Technology & Security</h3>
+                <div class="tech-features">
+                    <div class="tech-item">
+                        <h4>🔒 Bank-Grade Security</h4>
+                        <p>256-bit SSL encryption, multi-factor authentication, and 24/7 fraud monitoring to keep your money safe.</p>
+                    </div>
+                    <div class="tech-item">
+                        <h4>📱 Mobile-First Design</h4>
+                        <p>Our platform is built for modern devices with responsive design and intuitive user experiences.</p>
+                    </div>
+                    <div class="tech-item">
+                        <h4>⚡ Real-Time Processing</h4>
+                        <p>Instant transfers, real-time notifications, and immediate account updates for seamless banking.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="about-section">
+                <h3>Awards & Recognition</h3>
+                <div class="awards">
+                    <ul>
+                        <li>🏆 "Best Digital Bank 2023" - Banking Technology Awards</li>
+                        <li>🌟 "Customer Choice Award 2023" - Financial Services Excellence</li>
+                        <li>🔒 "Top Security Implementation 2023" - Cybersecurity Awards</li>
+                        <li>🚀 "Innovation in Banking 2022" - FinTech Forum</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="about-section">
+                <h3>Contact Information</h3>
+                <div class="contact-info">
+                    <div class="contact-grid">
+                        <div class="contact-item">
+                            <strong>📞 Phone:</strong><br>
+                            Customer Service: 1-800-DEMO-BANK (1-800-336-6-2265)<br>
+                            Business Banking: 1-800-BIZ-DEMO (1-800-249-3366)
+                        </div>
+                        <div class="contact-item">
+                            <strong>📧 Email:</strong><br>
+                            General: info@demobank.com<br>
+                            Support: support@demobank.com<br>
+                            Business: business@demobank.com
+                        </div>
+                        <div class="contact-item">
+                            <strong>🏢 Address:</strong><br>
+                            DemoBank Headquarters<br>
+                            123 Financial District<br>
+                            San Francisco, CA 94111
+                        </div>
+                        <div class="contact-item">
+                            <strong>🕒 Hours:</strong><br>
+                            Customer Service: 24/7<br>
+                            Phone Support: Mon-Fri 7AM-9PM PST<br>
+                            Weekend: Sat-Sun 8AM-6PM PST
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="about-section">
+                <h3>Application Information</h3>
+                <div class="app-info">
+                    <p><strong>Version:</strong> 2.1.0</p>
+                    <p><strong>Build Technology:</strong> Java Spring Boot, Thymeleaf, MySQL</p>
+                    <p><strong>Last Updated:</strong> January 2026</p>
+                    <p><strong>Support:</strong> This is a demonstration banking application for educational purposes.</p>
+                </div>
+            </div>
+
+            <div class="cta-section">
+                <a th:href="@{/dashboard}" class="btn btn-primary">Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2026 DemoBank. All rights reserved. | FDIC Insured | Equal Housing Lender</p>
+            <p>Member FDIC. DemoBank is a trademark of DemoBank Corporation.</p>
+        </div>
+    </footer>
+</body>
+</html>

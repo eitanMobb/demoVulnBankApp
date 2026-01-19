@@ -242,6 +242,17 @@ public class BankController {
         return "transactions";
     }
     
+    @GetMapping("/about")
+    public String about(HttpSession session, Model model) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            return "redirect:/login";
+        }
+        
+        model.addAttribute("user", user);
+        return "about";
+    }
+    
     @GetMapping("/logout")
     public String logout(HttpSession session) {
         session.invalidate();
